@@ -81,15 +81,14 @@ const ZERO: u64 = 1 << 63;
 #[inline(always)]
 pub fn ord_u64_to_f64(u: u64) -> f64 {
     if u == ZERO {
-        return dbg!(0.0);
+        return 0.0;
     }
     if u > ZERO {
         // it's positive!
-        dbg!(u);    
-        return dbg!(f64::from_bits(u & VALUE_MASK));
+        
+        return f64::from_bits(u & VALUE_MASK);
     }
-    dbg!(u);
-    dbg!(f64::from_bits(!(u & VALUE_MASK)))
+    f64::from_bits(!(u & VALUE_MASK))
 }
 
 #[inline(always)]
