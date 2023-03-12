@@ -81,13 +81,15 @@ const ZERO: u64 = 1 << 63;
 #[inline(always)]
 pub fn ord_u64_to_f64(u: u64) -> f64 {
     if u == ZERO {
-        return 0.0;
+        return dbg!(0.0);
     }
     if u > ZERO {
         // it's positive!
-        return f64::from_bits(u & SIGN_MASK);
+        dbg!(u);    
+        return dbg!(f64::from_bits(u & VALUE_MASK));
     }
-    f64::from_bits(!(u & VALUE_MASK))
+    dbg!(u);
+    dbg!(f64::from_bits(!(u & VALUE_MASK)))
 }
 
 #[inline(always)]
@@ -250,19 +252,55 @@ mod tests {
     }
 
     #[test]
-    fn test_conversion_cycle_to_and_from_bits() {
+    fn test_conversion_cycle_to_and_from_bits_and_back_to_float() {
         let mut rng = rand::thread_rng();
         // divide by 10.0 to avoid 'UniformSampler::sample_single: range overflow' panics
         let min = f64::MIN / 10.0;
         let max = f64::MAX / 10.0;
         for _ in 0..1_000_000 {
-            let v: f64 = rng.gen_range(min..max);
-            let f0 = Float64::new(v);
+            let v0: f64 = rng.gen_range(min..max);
+            let f0 = Float64::new(v0);
             let b1 = f0.bits();
             let f1 = Float64::from_bits(b1);
             let b2 = f1.bits();
             let f2 = Float64::from_bits(b2);
             assert_eq!(f1, f2);
+            let v1: f64 = f1.to_f64();
+            let v2: f64 = f1.to_f64();
+            assert_eq!(v0, v1);
+            assert_eq!(v0, v2);
         }
+    }
+
+    #[test]
+    fn test_to_f64_positive() {
+        let v1 = 1.2603076858691385e306;
+        let f = Float64::new(v1);
+        let v2 = f.to_f64();
+        assert_eq!(v1, v2);
+    }
+
+    #[test]
+    fn test_to_f64_negative() {
+        let v1 = -1.2603076858691385e306;
+        let f = Float64::new(v1);
+        let v2 = f.to_f64();
+        assert_eq!(v1, v2);
+    }
+
+    #[test]
+    fn test_to_f64_zero() {
+        let v1 = 0.0;
+        let f = Float64::new(v1);
+        let v2 = f.to_f64();
+        assert_eq!(v1, v2);
+    }
+
+    #[test]
+    fn test_to_f64_neg_zero() {
+        let v1 = -0.0;
+        let f = Float64::new(v1);
+        let v2 = f.to_f64();
+        assert_eq!(v1, v2);
     }
 }
